@@ -116,12 +116,24 @@ is reliable: `File > Import XML…` or `import_xml_into_fcp`. Read
 CutSmith is the workflow layer: assemble-from-scratch, audio-measured gain, sync
 offsets, caption chunking — with tests that verify the actual written timelines.
 
-## Verifying on a fresh FCP machine (the 5-minute acceptance run)
+## Verifying on a FCP machine
 
-1. `npm install && npm run build && npm test && npm run smoke` — all 20 unit tests + 8 smoke checks must pass.
-2. Launch Final Cut Pro once by hand (first-run dialogs out of the way), then run `check_fcp_available` — macOS will ask for Automation permission; grant it.
-3. `validate_dtd` on any FCP-exported XML — must pass. Then run it on a CutSmith-generated file before importing.
-4. Import a generated rough cut into a **throwaway library** first. Check: clips land, captions typed correctly at 30fps, audio sync offsets match the selects.
+The whole run is one command — every check that can only pass with Final Cut Pro present:
+
+```bash
+node test/acceptance.mjs
+```
+
+- exit `10` + install instructions → FCP missing/unusable (nothing else tested)
+- PASS list + exit `0` → AppleScript roundtrip live, DTD-certified project imported into real FCP
+
+The 90-day free FCP trial (Mac App Store) is enough; remove it after testing if you don't own it.
+
+Manual depth-checks after a pass:
+1. `npm install && npm run build && npm test && npm run smoke` — all 20 unit tests + 12 smoke checks must pass.
+2. Launch FCP once by hand first (first-run dialogs out of the way); grant macOS Automation permission when the acceptance run asks.
+3. In FCP, confirm the imported event ("Cutsmith Acceptance"): clips land, titles render, audio present.
+4. `validate_dtd` on any FCP-exported XML — must pass both ways.
 
 ## Known limitations (read before trusting it with a master timeline)
 
