@@ -52,7 +52,7 @@ Requirements: macOS, Node 18+, Final Cut Pro 10.6+ (only for the FCP roundtrip t
 analysis/assembly work without it), ffmpeg on PATH (audio tools).
 
 ```bash
-git clone https://github.com/yourname/cutsmith.git
+git clone https://github.com/msfbeast/cutsmith.git
 cd cutsmith
 npm install && npm run build
 npm test && npm run smoke   # 20 unit tests + 8 end-to-end checks
