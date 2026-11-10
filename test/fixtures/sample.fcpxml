@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+<fcpxml version="1.11">
+  <resources>
+    <format id="r1" frameDuration="1/30s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
+    <asset id="r2" name="Cam A Interview" src="file:///Users/editor/footage/camA.mov" start="0/1s" duration="600/1s" format="r1" hasVideo="1" hasAudio="1" audioSources="1" audioChannels="2"/>
+    <asset id="r3" name="Cam B Host" src="file:///Users/editor/footage/camB.mov" start="0/1s" duration="600/1s" format="r1" hasVideo="1" hasAudio="1" audioSources="1" audioChannels="2"/>
+    <asset id="r4" name="Broll Desk" src="file:///Users/editor/footage/broll.mov" start="0/1s" duration="120/1s" format="r1" hasVideo="1" hasAudio="1" audioSources="1" audioChannels="2"/>
+  </resources>
+  <library>
+    <event name="Podcast Ep 42">
+      <project name="Rough Cut v1">
+        <sequence format="r1" duration="1850/30s" tcStart="3600s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
+          <spine>
+            <asset-clip name="Cam A Interview" ref="r2" offset="0/1s" start="15/1s" duration="50/1s" audioRoles="dialogue">
+              <marker start="10/1s" duration="1/30s" value="Good take"/>
+              <audio lane="-1" offset="0/1s">
+                <adjust-volume amount="1.2"/>
+              </audio>
+            </asset-clip>
+            <asset-clip name="Cam B Host" ref="r3" offset="50/1s" start="200/1s" duration="250/30s"/>
+            <asset-clip name="Flash Clip" ref="r4" offset="1750/30s" start="30/1s" duration="2/30s"/>
+            <gap name="Gap" offset="584/10s" duration="4/1s"/>
+            <asset-clip name="Broll Desk" ref="r4" offset="312/5s" start="5/1s" duration="27/1s">
+              <caption lane="1" offset="3/1s" start="0/1s" duration="5/1s">
+                <text><text-style>Welcome back to the show</text-style></text>
+              </caption>
+            </asset-clip>
+          </spine>
+        </sequence>
+      </project>
+    </event>
+  </library>
+</fcpxml>
