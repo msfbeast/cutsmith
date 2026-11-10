@@ -26,6 +26,7 @@ Apple's FCPXML interchange format and ffmpeg audio analysis.
 | `check_fcp_available` | Probe whether Final Cut Pro is running and scriptable on this Mac |
 | `import_xml_into_fcp` | Open a generated `.fcpxml` in FCP (File > Import XML equivalent) |
 | `export_project_xml` | Ask FCP to export the front project as XML |
+| `validate_dtd` | Certify an `.fcpxml` against Apple's official DTD (auto-found inside the FCP install) with `xmllint` — the strongest import-safety check |
 
 ## The sync-offset fix
 
@@ -109,6 +110,13 @@ is reliable: `File > Import XML…` or `import_xml_into_fcp`. Read
 
 CutSmith is the workflow layer: assemble-from-scratch, audio-measured gain, sync
 offsets, caption chunking — with tests that verify the actual written timelines.
+
+## Verifying on a fresh FCP machine (the 5-minute acceptance run)
+
+1. `npm install && npm run build && npm test && npm run smoke` — all 20 unit tests + 8 smoke checks must pass.
+2. Launch Final Cut Pro once by hand (first-run dialogs out of the way), then run `check_fcp_available` — macOS will ask for Automation permission; grant it.
+3. `validate_dtd` on any FCP-exported XML — must pass. Then run it on a CutSmith-generated file before importing.
+4. Import a generated rough cut into a **throwaway library** first. Check: clips land, captions typed correctly at 30fps, audio sync offsets match the selects.
 
 ## License
 

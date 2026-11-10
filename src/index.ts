@@ -263,7 +263,6 @@ server.tool(
 server.tool(
   "check_fcp_available",
   `Check whether Final Cut Pro is installed and scriptable on this Mac (AppleScript probe).`,
-  {},
   async () => {
     try {
       const v = await osascript('tell application "Final Cut Pro" to launch\ntell application "Final Cut Pro" to play {0}/60', 10_000);
@@ -310,6 +309,44 @@ server.tool(
         error: `AppleScript export failed: ${(err as Error).message}`,
         fallback: "FCP versions differ in scripting dictionary. Manual path: select project, File > Export XML… then re-run analyze_timeline on the file. See README > Roundtrip.",
       });
+    }
+  },
+);
+
+/* ------------------------------------------------------------------ */
+/* Tool: validate_dtd — certify a timeline against Apple's real DTD    */
+/* ------------------------------------------------------------------ */
+server.tool(
+  "validate_dtd",
+  `Validate an .fcpxml against Apple's official FCPXML DTD using xmllint. The DTD is auto-discovered inside your Final Cut Pro install (redistribution is not permitted), or set the CUTSMITH_DTD environment variable to a local copy. This is the strongest correctness check available: if a generated timeline passes this, FCP will import it.`,
+  { fcpxmlPath: z.string() },
+  async ({ fcpxmlPath }) => {
+    const p = resolve(fcpxmlPath);
+    if (!existsSync(p)) return out({ ok: false, error: `file not found: ${p}` });
+    const candidates = [
+      process.env.CUTSMITH_DTD,
+      "/Applications/Final Cut Pro.app/Contents/Frameworks/Interchange.framework/Versions/A/Resources/FCPXMLv1_14.dtd",
+      "/Applications/Final Cut Pro.app/Contents/Frameworks/Interchange.framework/Versions/B/Resources/FCPXMLv1_14.dtd",
+    ].filter((c): c is string => typeof c === "string");
+    const dtd = candidates.find((c) => existsSync(c));
+    if (!dtd) {
+      return out({
+        ok: false,
+        error: "FCPXML DTD not found on this machine.",
+        hint: "Install Final Cut Pro (the DTD ships inside it, not redistributable) or set CUTSMITH_DTD=/path/to/FCPXMLv1_14.dtd",
+        searched: candidates,
+      });
+    }
+    try {
+      await new Promise<void>((res, rej) => {
+        execFile("xmllint", ["--dtdvalid", dtd, "--noout", p], { timeout: 60_000 }, (err, _o, stderr) => {
+          if (err) rej(new Error(stderr.trim().split("\n").slice(0, 8).join("\n") || err.message));
+          else res();
+        });
+      });
+      return out({ ok: true, valid: true, dtd, file: p, verdict: "Passes Apple's official FCPXML DTD — safe to import." });
+    } catch (err) {
+      return out({ ok: false, valid: false, dtd, file: p, violations: (err as Error).message, verdict: "DTD violations — fix before importing into Final Cut Pro." });
     }
   },
 );

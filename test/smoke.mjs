@@ -64,8 +64,8 @@ send({ jsonrpc: "2.0", method: "notifications/initialized" });
 /* 2. tool discovery */
 const tools = await request("tools/list", {});
 const names = tools.tools.map((t) => t.name);
-const expected = ["analyze_timeline", "detect_glitches", "analyze_silence", "assemble_rough_cut", "measure_loudness", "convert_srt_to_captions", "check_fcp_available", "import_xml_into_fcp", "export_project_xml"];
-check("all 9 tools registered", expected.every((e) => names.includes(e)), names.join(", "));
+const expected = ["analyze_timeline", "detect_glitches", "analyze_silence", "assemble_rough_cut", "measure_loudness", "convert_srt_to_captions", "check_fcp_available", "import_xml_into_fcp", "export_project_xml", "validate_dtd"];
+check("all 10 tools registered", expected.every((e) => names.includes(e)), names.join(", "));
 
 /* 3. analyze the shipped fixture */
 const fixture = join(root, "test", "fixtures", "sample.fcpxml");
