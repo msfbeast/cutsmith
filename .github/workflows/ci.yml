@@ -1,0 +1,17 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: brew install ffmpeg
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run smoke
+      # DTD validation runs only where Apple's DTD exists (FCP machines);
+      # CI passes without it. Set CUTSMITH_DTD to enable in other environments.

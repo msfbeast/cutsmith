@@ -101,7 +101,10 @@ export function buildFcpXml(p: AssembleProject, assets: AssembleAsset[]): string
     const flags = `hasVideo="${a.hasVideo === false ? 0 : 1}" hasAudio="${a.hasAudio === false ? 0 : 1}"`;
     const dur = a.duration ? ` duration="${timeStr(a.duration)}"` : "";
     const formatAttr = ` format="${formatRef}"`;
-    lines.push(`    <asset id="${assetIds.get(a.id)}" name="${esc(a.name)}" src="${esc(a.src)}" start="0/1s"${dur}${formatAttr} audioSources="1" audioChannels="2" ${flags} />`);
+    // DTD-true asset: media location lives in a media-rep child (FCP's own export form).
+    lines.push(`    <asset id="${assetIds.get(a.id)}" name="${esc(a.name)}" start="0/1s"${dur}${formatAttr} audioSources="1" audioChannels="2" ${flags}>`);
+    lines.push(`      <media-rep kind="original-media" src="${esc(a.src)}"/>`);
+    lines.push(`    </asset>`);
   }
   lines.push(`    <effect id="${titleEffectId}" name="Basic Text" uid=".../Titles.localized/Basic Text.localized/Basic Text.moti"/>`);
   lines.push(`  </resources>`);
@@ -138,7 +141,7 @@ export function buildFcpXml(p: AssembleProject, assets: AssembleAsset[]): string
       const vol = c.volume !== undefined && c.volume !== 1 ? `<adjust-volume amount="${fmtNum(c.volume)}"/>` : "";
       const mk = (c.markers ?? []).map((m) =>
         `<marker start="${timeStr(m.start)}" duration="1/${Math.round(fps)}s" value="${esc(m.name ?? "")}"/>`).join("");
-      lines.push(`            <asset-clip name="${esc(c.name ?? "Clip")}" ref="${ref}" ${common} start="${timeStr(c.start ?? t(0))}" duration="${timeStr(c.duration)}"${c.mute ? ' audioMute="1"' : ""}${c.audioRoles ? ` audioRoles="${esc(c.audioRoles)}"` : ""}>${mk}${vol}</asset-clip>`);
+      lines.push(`            <asset-clip name="${esc(c.name ?? "Clip")}" ref="${ref}" ${common} start="${timeStr(c.start ?? t(0))}" duration="${timeStr(c.duration)}"${c.mute ? ' audioMute="1"' : ""}>${vol}${mk}</asset-clip>`);
       continue;
     }
     if (c.kind === "title") {

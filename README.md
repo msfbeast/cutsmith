@@ -27,6 +27,11 @@ Apple's FCPXML interchange format and ffmpeg audio analysis.
 | `import_xml_into_fcp` | Open a generated `.fcpxml` in FCP (File > Import XML equivalent) |
 | `export_project_xml` | Ask FCP to export the front project as XML |
 | `validate_dtd` | Certify an `.fcpxml` against Apple's official DTD (auto-found inside the FCP install) with `xmllint` — the strongest import-safety check |
+| `remove_silences` | One call: ffprobe → silencedetect → kept regions (padded, frame-snapped) → loudness-normalized NEW project |
+| `fix_glitches` | Drop or absorb micro-clips in a NEW file; refuses to flatten nested structures unless forced |
+| `plan_ducking` | Speech-informed music ducking plan with explicit dials (duckVolume / padding / threshold); output feeds `assemble_rough_cut` per-region volume |
+
+All tools page or cap their output, so hour-long episodes analyze without flooding model context. Every generated file in the test suite validates against Apple's official FCPXML v1.11 DTD.
 
 ## The sync-offset fix
 
@@ -117,6 +122,18 @@ offsets, caption chunking — with tests that verify the actual written timeline
 2. Launch Final Cut Pro once by hand (first-run dialogs out of the way), then run `check_fcp_available` — macOS will ask for Automation permission; grant it.
 3. `validate_dtd` on any FCP-exported XML — must pass. Then run it on a CutSmith-generated file before importing.
 4. Import a generated rough cut into a **throwaway library** first. Check: clips land, captions typed correctly at 30fps, audio sync offsets match the selects.
+
+## Known limitations (read before trusting it with a master timeline)
+
+- **Roundtripping complex timelines is lossy.** The parser reads compound clips, attached audio sub-clips and effect payloads raw; the generator writes flat spines. Analyze-and-assemble-new is the safe path; in-place regeneration of an editor's intricate project will flatten structure (tools warn and refuse unless `force=true`).
+- Captions ship as Basic Text titles (universal), not native `<caption>` elements; word timings in chunked captions are evenly distributed, not word-accurate.
+- Volume ducking is stepped per region (FCPXML has no editable crossfade automation in 1.11); keep duck levels moderate.
+- Drop-frame timecode (29.97 DF) and >2-channel audio layouts are not yet mapped.
+- `import_xml_into_fcp` / `export_project_xml` behavior varies across FCP versions; validated import path is FCP's own File > Import XML. Apple's DTD ships inside FCP and cannot be redistributed here.
+
+## Credits
+
+DTD verification uses Apple's FCPXML DTDs, discovered at runtime from your FCP install; the DTD forms matched against OpenFCPXMLKit's published copies during development.
 
 ## License
 

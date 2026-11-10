@@ -55,6 +55,7 @@ export interface Clip {
   lane?: number;
   audioStart?: Time;
   roles?: string;
+  text?: string; // title/caption text (for titles: the <text> payload)
   markers: MarkerInfo[];
   captions?: CaptionInfo[];
   children?: unknown[]; // raw child nodes (compound clips, stories, audio)
@@ -131,6 +132,7 @@ function clipFromNode(tag: string, n: Node): Clip {
   const markers: MarkerInfo[] = [];
   const captions: CaptionInfo[] = [];
   const rawChildren: unknown[] = [];
+  let text: string | undefined;
   for (const kid of kids) {
     const kt = tagName(kid);
     if (kt === "marker") {
@@ -140,6 +142,8 @@ function clipFromNode(tag: string, n: Node): Clip {
         start: maybeTime(ka["@_start"]) ?? t(0),
         type: ka["@_type"],
       });
+    } else if (kt === "text" && kind === "title") {
+      text = collectTextRecurse(children(kid)).trim();
     } else if (kt === "caption") {
       const ka = attrs(kid);
       captions.push({
@@ -164,6 +168,7 @@ function clipFromNode(tag: string, n: Node): Clip {
     lane: num(a["@_lane"]),
     audioStart: maybeTime(a["@_audioStart"]),
     roles: a["@_audioRoles"],
+    text,
     markers,
     captions: captions.length ? captions : undefined,
     children: rawChildren.length ? rawChildren : undefined,
@@ -186,10 +191,13 @@ function extractResource(n: Node, formats: FormatInfo[], assets: AssetInfo[], ef
     });
   } else if (rt === "asset") {
     const a = attrs(n);
+    // Apple's 1.11 form: file lives in <media-rep kind="original-media" src=...>;
+    // older/community files put src directly on the asset — accept both.
+    const rep = children(n).find((c) => tagName(c) === "media-rep");
     assets.push({
       id: a["@_id"] ?? "",
       name: a["@_name"],
-      src: a["@_src"],
+      src: (rep ? attrs(rep)["@_src"] : undefined) ?? a["@_src"],
       duration: maybeTime(a["@_duration"]),
       hasVideo: a["@_hasVideo"] === "1",
       hasAudio: a["@_hasAudio"] === "1",
